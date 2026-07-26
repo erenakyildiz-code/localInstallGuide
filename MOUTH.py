@@ -137,4 +137,3 @@ async def mark_session_done(session_id: str):
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=8080)
-[devil@baratrum ~]$ 
