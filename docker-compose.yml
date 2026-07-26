@@ -1,0 +1,77 @@
+# Linux / Windows (WSL2) with an NVIDIA GPU.
+# Usage:  cp .env.example .env   (edit it)   →   docker compose up -d
+name: companion
+
+services:
+  # ── BRAIN: llama.cpp server, OpenAI-ish API on :8080 ──────────────────────
+  brain:
+    build:
+      context: .
+      dockerfile: Dockerfile.brain
+    container_name: companion-brain
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./GGUF:/models          # put your .gguf files in ./GGUF
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all        # or device_ids: ['0'] to pin one GPU
+              capabilities: [gpu, compute, utility]
+    command: [
+      "-m", "/models/${BRAIN_MODEL}",
+      "--host", "0.0.0.0",
+      "--port", "8080",
+      "-c", "${BRAIN_CTX}",          # context size — 26B Q6 at 171072 needs a 24GB+ card
+      "-b", "8192",
+      "-ngl", "99",                  # layers offloaded to GPU (99 = all)
+      "--flash-attn", "on",
+      "--cache-type-k", "q8_0",      # KV cache quant — big VRAM saver on long context
+      "--cache-type-v", "q8_0",
+      "--chat-template", "gemma"
+    ]
+
+  # ── EARS: faster-whisper ASR, OpenAI-compatible /v1/audio/transcriptions ──
+  ears:
+    image: fedirz/faster-whisper-server:latest-cuda
+    container_name: companion-ears
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - WHISPER__MODEL=${WHISPER_MODEL}
+      - WHISPER__INFERENCE_DEVICE=cuda
+    volumes:
+      - ears-models:/root/.cache/huggingface   # model survives container rebuilds
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  # ── MOUTH: Kokoro TTS, OpenAI-compatible /v1/audio/speech ─────────────────
+  mouth:
+    image: ghcr.io/remsky/kokoro-fastapi-gpu:latest
+    container_name: companion-mouth
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8880"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  ears-models:

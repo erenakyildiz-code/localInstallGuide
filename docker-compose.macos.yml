@@ -1,0 +1,28 @@
+# macOS (Apple Silicon). Docker on macOS has NO GPU access, so:
+#   - ears + mouth run here as CPU containers (small models, fine on M-chips)
+#   - the BRAIN runs NATIVELY (Metal GPU) — see the README macOS section
+# Usage:  docker compose -f docker-compose.macos.yml up -d
+name: companion
+
+services:
+  ears:
+    image: fedirz/faster-whisper-server:latest-cpu
+    container_name: companion-ears
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      - WHISPER__MODEL=${WHISPER_MODEL:-Systran/faster-whisper-small}
+      - WHISPER__INFERENCE_DEVICE=cpu
+    volumes:
+      - ears-models:/root/.cache/huggingface
+
+  mouth:
+    image: ghcr.io/remsky/kokoro-fastapi-cpu:latest
+    container_name: companion-mouth
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8001:8880"
+
+volumes:
+  ears-models:

@@ -1,0 +1,42 @@
+# Stage 1: Build - Pulling from NVIDIA's NGC registry (nvcr.io)
+FROM nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu22.04 AS build
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y build-essential cmake git libcurl4-openssl-dev
+
+# Create the missing .so.1 symlink for the CUDA driver stub and add it to the library path
+RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
+ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64/stubs:${LD_LIBRARY_PATH}"
+
+# Clone the latest llama.cpp master branch (critical for Gemma 4 support)
+RUN git clone https://github.com/ggml-org/llama.cpp.git /app
+WORKDIR /app
+
+# Build with CUDA enabled.
+# Multi-arch fat binary: covers Turing (RTX 20xx) through Blackwell (RTX 50xx).
+# The NVIDIA driver picks the right cubin at load time, so this ONE image
+# runs on sm_75 / 80 / 86 / 89 / 90 / 100 / 120.
+# (Add 60;61;70 below if you must support Pascal/Volta — CUDA 12.9 still
+#  compiles them with deprecation warnings; CUDA 13 removes them entirely.)
+# NOTE: do NOT use CMAKE_CUDA_ARCHITECTURES=native here — that would bake in
+# only the build machine's GPU and break everyone else.
+RUN cmake -B build \
+    -DGGML_CUDA=ON \
+    -DCMAKE_CUDA_ARCHITECTURES="75;80;86;89;90;100;120" \
+    -DCMAKE_BUILD_TYPE=Release
+RUN cmake --build build --config Release -j$(nproc)
+
+# Stage 2: Run - Match the 12.9.0 runtime from NGC
+FROM nvcr.io/nvidia/cuda:12.9.0-runtime-ubuntu22.04
+
+# Install runtime dependencies
+RUN apt-get update && apt-get install -y libcurl4-openssl-dev libgomp1 && rm -rf /var/lib/apt/lists/*
+
+# Keep everything in one directory
+WORKDIR /app
+COPY --from=build /app/build/bin/ /app/
+
+# Tell the OS where to look for the dynamic backends
+ENV LD_LIBRARY_PATH="/app:${LD_LIBRARY_PATH}"
+
+ENTRYPOINT ["/app/llama-server"]
