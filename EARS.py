@@ -52,4 +52,3 @@ async def transcribe(file: UploadFile = File(...)):
             os.remove(temp_webm_path)
         if os.path.exists(temp_wav_path):
             os.remove(temp_wav_path)
-[devil@baratrum fucking_nvidia_shit]$ 
