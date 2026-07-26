@@ -2,6 +2,7 @@
 
 This document is **self-contained**: every file you need is inlined below.
 If you get stuck, paste this entire README into an LLM along with your error message and your GPU/OS — it has enough context for the LLM to help you.
+HERE YOU HAVE THE ACTUAL SERVERS WITH CUSTOM ENDPOINTS: EARS.py and MOUTH.py READ THEM.
 
 ## What you're running
 
