@@ -16,7 +16,7 @@ from mlx_audio.tts.utils import load_model
 # ---------------------------------------------------------
 MODEL_ID = "mlx-community/OmniVoice-bf16"
 # Paths as per your omni.py
-REFERENCE_AUDIO_PATH = "/Users/devil/moss/VOICESDIR"
+REFERENCE_AUDIO_PATH = "/Users/devil/moss/VOICESDIR" #CHANGE THIS TO YOUR OWN LANG DIRECTORY (DIR SHOULD LOOK LIKE THIS langCode/langCode.wav langCode.txt)
 STREAM_LANG_MAP = {}
 app = FastAPI(title="Baratrum OmniVoice Streamer")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
