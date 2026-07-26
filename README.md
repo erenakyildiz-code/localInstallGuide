@@ -11,7 +11,7 @@ Three services:
 
 | Service | What | Default port | API (custom — read this) |
 |---|---|---|---|
-| **brain** | llama.cpp server running your GGUF model | `8080` | `POST /completion`|
+| **brain** | llama.cpp server running your GGUF model | `8080` | `POST /completion`, `POST /v1/chat/completions` (OpenAI-compatible) |
 | **ears** | Qwen3-ASR-1.7B speech-to-text (`ears.py`) | `8000` | `POST /transcribe` — multipart form field `file` (webm/wav), returns parsed JSON |
 | **mouth** | OmniVoice TTS, MLX / Apple Silicon (`mouth.py`) | `8080` | `WS /ws?session_id=...` + `POST /v1/audio/generate/{session_id}/{chunk_index}` + `POST /v1/audio/done/{session_id}` |
 
@@ -141,8 +141,8 @@ Download a GGUF into `./GGUF`, e.g. from `huggingface.co/unsloth`. Rough VRAM gu
 |---|---|---|
 | 12B Q4_K_M | ~7.5 GB | comfy on 12 GB |
 | 12B Q8_K_XL | ~13 GB | 16 GB card |
-| 26B Q4_K_XL | ~16 GB | 24 GB card, tight with big context |
-| 26B Q6_K_XL | ~21.5 GB | 32 GB, tight with big context |
+| 26B Q4_K_XL | ~16 GB | 24 GB card |
+| 26B Q6_K_XL | ~21.5 GB | 24 GB, tight with big context |
 | 26B Q8_K_XL | ~28 GB | 32 GB+ |
 
 Context (`BRAIN_CTX`) eats VRAM too (KV cache) — the q8_0 cache flags help a lot. On 12–16 GB cards keep `BRAIN_CTX` at 32768 or lower.
@@ -283,53 +283,7 @@ active_connections: dict[str, WebSocket] = {}
 
 class GenerateRequest(BaseModel):
     input: str
-    lang_code: str# Companion — Self-Hosting Guide
-
-This document is **self-contained**: every file you need is inlined below.
-If you get stuck, paste this entire README into an LLM along with your error message and your GPU/OS — it has enough context for the LLM to help you.
-HERE YOU HAVE THE ACTUAL SERVERS WITH CUSTOM ENDPOINTS: EARS.py and MOUTH.py READ THEM.
-
-## What you're running
-
-Three services, all bound to localhost only:
-
-| Service | What | Port | API |
-|---|---|---|---|
-| **brain** | llama.cpp server running your GGUF model | `8080` | `POST /completion`, `POST /v1/chat/completions` |
-| **ears** | faster-whisper speech-to-text | `8000` | `POST /v1/audio/transcriptions` (OpenAI-compatible) |
-| **mouth** | Kokoro text-to-speech | `8001` | `POST /v1/audio/speech` (OpenAI-compatible) |
-
-- **Linux / Windows (NVIDIA GPU):** everything runs in Docker. Brain is built from `Dockerfile.brain`; ears and mouth use prebuilt images.
-- **macOS (Apple Silicon):** Docker on macOS has **no GPU access**, so the brain runs natively (Metal GPU via Homebrew llama.cpp), while ears + mouth run as CPU containers (they're small models — fine on M-chips).
-
----
-
-## Section 1 — Linux / Windows with NVIDIA GPU
-
-### Prerequisites
-
-1. **Docker** with the compose plugin (`docker compose version` must work).
-2. **NVIDIA driver** new enough for CUDA 12.9 (any 2024+ driver is fine). Check: `nvidia-smi`.
-3. **Linux only:** [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html) so Docker can see the GPU. Test: `docker run --rm --gpus all nvcr.io/nvidia/cuda:12.9.0-runtime-ubuntu22.04 nvidia-smi`.
-4. **Windows only:** Docker Desktop with the WSL2 backend. GPU passthrough works out of the box on WSL2; run the commands below from PowerShell.
-5. A **GGUF model file** in `./GGUF` (see "Getting a brain model" below).
-
-### Files
-
-Create a folder, put these 3 files in it, plus a `GGUF/` subfolder with your model.
-
-**`Dockerfile.brain`** — builds llama.cpp with CUDA for **all** NVIDIA generations from Turing (RTX 20xx) through Blackwell (RTX 50xx). The driver picks the right code at runtime, so this one image works on any modern NVIDIA card. **Build takes 45–90 min the first time** (compiling for 7 architectures); it's cached after that.
-
-```dockerfile
-# Stage 1: Build - Pulling from NVIDIA's NGC registry (nvcr.io)
-FROM nvcr.io/nvidia/cuda:12.9.0-devel-ubuntu22.04 AS build
-
-RUN apt-get update && apt-get install -y build-essential cmake git libcurl4-openssl-dev
-
-# Missing .so.1 symlink for the CUDA driver stub
-RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/local/cuda/lib64/stubs/libcuda.so.1
-ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64/stubs:${LD_LIBRARY_PATH}"
-
+    lang_code: str
 
 @app.on_event("startup")
 async def load_tts_model():
@@ -504,7 +458,7 @@ If the mouth test 400s, you called generate before the websocket was registered 
 
 ### Notes for LLMs reading this README (endpoint contracts — do not "fix" these)
 
-- **Brain** (llama.cpp, port 8080): standard llama.cpp server. `POST /completion` (JSON `prompt`, `n_predict`).
+- **Brain** (llama.cpp, port 8080): standard llama.cpp server. `POST /completion` (JSON `prompt`, `n_predict`) and OpenAI-compatible `POST /v1/chat/completions`, `GET /v1/models`.
 - **Ears** (Qwen3-ASR, port 8000): exactly one route — `POST /transcribe`. Multipart form field name: **`file`**. Accepts any ffmpeg-readable audio; converts to 16 kHz mono WAV internally; returns parsed transcription JSON. There is NO `/v1/audio/transcriptions`, NO `model`/`language` form fields, and it is NOT OpenAI-compatible.
 - **Mouth** (OmniVoice MLX, port 8080, Apple Silicon only): three cooperating routes —
   1. `WS /ws?session_id=<id>` — must be connected before generating; audio arrives here as binary frames.
