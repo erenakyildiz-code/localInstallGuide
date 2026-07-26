@@ -277,3 +277,4 @@ First-ever request to ears/mouth downloads the model from HuggingFace — expect
 - Mouth speaks **OpenAI `/v1/audio/speech`** on 8001 (JSON body: `model`, `input`, `voice`, optional `response_format`: mp3/wav/pcm/opus/flac, supports `stream: true`).
 - All services bind `127.0.0.1` only. To expose on LAN, change the left side of the port mapping to `"0.0.0.0:PORT:CONTAINERPORT"` — and put auth in front of it, these APIs have none.
 - The brain image takes 45–90 min to build because it compiles llama.cpp CUDA kernels for 7 GPU architectures; this is intentional so one image works on any NVIDIA card from RTX 20xx to 50xx.
+<img width="1067" height="322" alt="Screenshot From 2026-07-26 18-11-34" src="https://github.com/user-attachments/assets/546f5cf4-e87d-4700-b2a5-a4b0fe318f3e" />
