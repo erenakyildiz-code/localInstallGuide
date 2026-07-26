@@ -249,7 +249,8 @@ Other details that matter:
 - Voice cloning needs a **reference audio directory**: `VOICESDIR/<lang>/<lang>.wav` + `VOICESDIR/<lang>.txt` (the transcript of that wav). Edit `REFERENCE_AUDIO_PATH` in the file to point at yours. Example: `VOICESDIR/en/en.wav` + `VOICESDIR/en/en.txt`.
 - Generation is serialized behind a GPU lock — concurrent requests queue, they don't parallelize. One Mac, one voice at a time.
 - `chunk_index` in the path is currently bookkeeping only — ordering is the client's responsibility.
-
+- you only need to care about the endpoints, if you can return what they return and accept what they accept, you can switch this out with any TTS model you want.
+- 
 **`mouth.py`** (verbatim — this is the real server; note it binds port **8080**, see the port-collision warning above):
 
 ```python
