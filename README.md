@@ -141,8 +141,8 @@ Download a GGUF into `./GGUF`, e.g. from `huggingface.co/unsloth`. Rough VRAM gu
 |---|---|---|
 | 12B Q4_K_M | ~7.5 GB | comfy on 12 GB |
 | 12B Q8_K_XL | ~13 GB | 16 GB card |
-| 26B Q4_K_XL | ~16 GB | 24 GB card |
-| 26B Q6_K_XL | ~21.5 GB | 24 GB, tight with big context |
+| 26B Q4_K_XL | ~16 GB | 24 GB card, tight with big context |
+| 26B Q6_K_XL | ~21.5 GB | 32 GB, tight with big context |
 | 26B Q8_K_XL | ~28 GB | 32 GB+ |
 
 Context (`BRAIN_CTX`) eats VRAM too (KV cache) — the q8_0 cache flags help a lot. On 12–16 GB cards keep `BRAIN_CTX` at 32768 or lower.
