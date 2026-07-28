@@ -17,7 +17,7 @@ Three services:
 
 | Service | What | Default port | API (custom — read this) |
 |---|---|---|---|
-| **brain** | llama.cpp server running your GGUF model | `8080` | `POST /completion`, `POST /v1/chat/completions` (OpenAI-compatible) |
+| **brain** | llama.cpp server running your GGUF model | `8080` | `POST /completion` LLAMA.cpp TYPE ENDPOINT, you can use openai type if you go and change the c# api MANUALLY. IT IS RECOMMENDED YOU USE GOOGLE'S GEMMA 4 |
 | **ears** | Qwen3-ASR-1.7B speech-to-text (`ears.py`) | `8000` | `POST /transcribe` — multipart form field `file` (webm/wav), returns parsed JSON |
 | **mouth** | OmniVoice TTS, MLX / Apple Silicon (`mouth.py`) | `8080` | `WS /ws?session_id=...` + `POST /v1/audio/generate/{session_id}/{chunk_index}` + `POST /v1/audio/done/{session_id}` |
 
