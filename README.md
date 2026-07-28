@@ -159,6 +159,9 @@ Context (`BRAIN_CTX`) eats VRAM too (KV cache) — the q8_0 cache flags help a l
 
 The actual ASR server. **One endpoint: `POST /transcribe`.** It accepts an uploaded audio file (the client sends `.webm`), converts it to 16 kHz mono WAV with **ffmpeg** (must be installed on the host), transcribes with Qwen3-ASR-1.7B, and returns the parsed result as JSON.
 
+  YOU MAY WANT TO USE WHISPER, I HAVE A THICK TURKISH ACCENT SO I USED THIS HEAVY MODEL. IT EATS UP A BIT OF VRAM, WHISPER-TINY TYPE MODELS MIGHT BE GOOD ENOUGH FOR YOU. Tho if you are going to talk
+  languages other than english I recommend qwen3-ASR-1.7B
+
 **`ears.py`** (verbatim — this is the real server):
 
 ```python
