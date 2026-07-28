@@ -1,6 +1,6 @@
 # Companion — Self-Hosting Guide
 
-it is recommended you let an llm guid you through the installation process.
+it is recommended you let an llm guide you through the installation process.
 
 
 YOU NEED THE C# API: https://github.com/erenakyildiz-code/PublicBaratrumBackend.git
