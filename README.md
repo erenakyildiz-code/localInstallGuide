@@ -236,7 +236,6 @@ First run downloads ~3–4 GB of model weights from HuggingFace.
 
 ### Notes
 
-- **GPU:** the file ships with `device_map="cpu"` because torch builds older than cu128 crash on Blackwell (RTX 50xx). On older NVIDIA cards or once you have torch ≥ 2.8/cu128, change it to `device_map="cuda"` (or `"auto"`) for much faster transcription. On Apple Silicon, `"mps"` works.
 - **Endpoint contract:** `POST /transcribe`, multipart form field named exactly **`file`**. Any audio container ffmpeg can read works (webm, wav, mp3, ogg) — it's always converted to 16 kHz mono before inference. Response is the parsed transcription JSON (transcribed text plus detected language metadata).
 - There is **no** `/v1/audio/transcriptions` route — if your client gets a 404 there, it's still pointing at the old OpenAI-style assumption.
 
@@ -413,6 +412,7 @@ python mouth.py
 ```
 
 First run downloads the OmniVoice weights (~a few GB) from HuggingFace.
+YOU COULD USE KOKORO OR qwen3TTS OR ANYTHING ELSE FOR THIS AS LONG AS THE ENDPOINTS DO THE SAME THING THEY DO HERE. THE MODEL IS NOT IMPORTANT THE LOGIC IS.
 
 ---
 
