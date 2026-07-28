@@ -178,8 +178,6 @@ print("Loading Qwen3-ASR-1.7B...")
 processor = AutoProcessor.from_pretrained(MODEL_ID)
 model = AutoModelForMultimodalLM.from_pretrained(
     MODEL_ID, 
-    # Hardcoding to CPU for tonight so your RTX 5090 doesn't crash on cu121
-    device_map="cpu", 
     torch_dtype=torch.bfloat16
 )
 print("Model ready on CPU fallback.")
