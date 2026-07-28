@@ -1,6 +1,7 @@
 # Companion — Self-Hosting Guide
 
 YOU NEED THE C# API: https://github.com/erenakyildiz-code/PublicBaratrumBackend.git
+
 YOU ALSO NEED THIS Desktop App: https://github.com/erenakyildiz-code/PublicBaratrumDesktopApp.git
 
 This file explains how you will run the MODELS; NOT THE C# API OR THE DESKTOP APP, THEY ARE WRITTEN IN THEIR OWN REPOSITORIES.
