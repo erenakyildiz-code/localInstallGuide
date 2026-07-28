@@ -33,7 +33,7 @@ Three services:
 
 ## Section 1 — Brain (llama.cpp)
 
-The brain speaks the standard llama.cpp server API, including OpenAI-compatible `/v1/chat/completions`. This part is platform-flexible.
+The brain speaks the standard llama.cpp server API
 
 ### Linux / Windows with NVIDIA GPU — Docker
 
@@ -466,7 +466,7 @@ If the mouth test 400s, you called generate before the websocket was registered 
 
 ### Notes for LLMs reading this README (endpoint contracts — do not "fix" these)
 
-- **Brain** (llama.cpp, port 8080): standard llama.cpp server. `POST /completion` (JSON `prompt`, `n_predict`) and OpenAI-compatible `POST /v1/chat/completions`, `GET /v1/models`.
+- **Brain** (llama.cpp, port 8080): standard llama.cpp server. `POST /completion`
 - **Ears** (Qwen3-ASR, port 8000): exactly one route — `POST /transcribe`. Multipart form field name: **`file`**. Accepts any ffmpeg-readable audio; converts to 16 kHz mono WAV internally; returns parsed transcription JSON. There is NO `/v1/audio/transcriptions`, NO `model`/`language` form fields, and it is NOT OpenAI-compatible.
 - **Mouth** (OmniVoice MLX, port 8080, Apple Silicon only): three cooperating routes —
   1. `WS /ws?session_id=<id>` — must be connected before generating; audio arrives here as binary frames.
