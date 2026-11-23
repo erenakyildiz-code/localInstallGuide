@@ -108,8 +108,6 @@ services:
       "-b", "8192",
       "-ngl", "99",
       "--flash-attn", "on",
-      "--cache-type-k", "q8_0",
-      "--cache-type-v", "q8_0",
       "--chat-template", "gemma"
     ]
 ```
@@ -136,7 +134,7 @@ docker compose logs -f brain     # watch until you see the server listening
 brew install llama.cpp
 llama-server -m ~/models/gemma-4-26B-A4B-it-UD-Q6_K_XL.gguf \
   --port 8080 -c 32768 -ngl 99 \
-  --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0 \
+  --flash-attn on \
   --chat-template gemma
 ```
 
@@ -154,7 +152,7 @@ Download a GGUF into `./GGUF`, e.g. from `huggingface.co/unsloth`. Rough VRAM gu
 | 26B Q6_K_XL | ~21.5 GB | 32 GB, tight with big context |
 | 26B Q8_K_XL | ~28 GB | 32 GB+ |
 
-Context (`BRAIN_CTX`) eats VRAM too (KV cache) — the q8_0 cache flags help a lot. On 12–16 GB cards keep `BRAIN_CTX` at 32768 or lower.
+Context (`BRAIN_CTX`) eats VRAM too (KV cache). DO NOT quantize the KV cache (`--cache-type-k` / `--cache-type-v`) — Gemma 4 breaks with it, so KV stays at the default f16. On 12–16 GB cards keep `BRAIN_CTX` at 32768 or lower.
 
 ---
 
@@ -510,6 +508,7 @@ asyncio.run(main())
 | `could not select device driver "nvidia" with capabilities: [[gpu]]` | Linux: install **nvidia-container-toolkit**, restart docker. Windows: Docker Desktop WSL2 backend, not Hyper-V. |
 | `no kernel image is available for execution on the device` | Brain image built for wrong arch. RTX 50xx = sm_120, 40xx = sm_89, 30xx = sm_86, 20xx = sm_75. |
 | Brain OOM / `ggml_cuda_host_malloc failed` | Model + context too big for VRAM. Lower `BRAIN_CTX`, or pick a smaller quant (see VRAM table). |
+| Brain outputs garbage / incoherent text | You added `--cache-type-k q8_0` / `--cache-type-v q8_0` — Gemma 4 breaks with a quantized KV cache. Remove those flags (default f16 is correct). |
 | `Form data requires "python-multipart"` on /transcribe | You skipped a dependency: `pip install python-multipart`. |
 | `pip install mlx` / `mlx-audio` fails | You're not on an Apple Silicon Mac. MLX does not exist on Linux/Windows — run `server.py` on a Mac on your LAN instead. |
 | HTTP 400 "WebSocket not connected" | You called `/v1/audio/generate/...` before opening `WS /ws?session_id=...`. The websocket must connect FIRST, with the same session_id. |
