@@ -7,6 +7,8 @@ YOU NEED THE C# API: https://github.com/erenakyildiz-code/PublicBaratrumBackend.
 
 YOU ALSO NEED THIS Desktop App: https://github.com/erenakyildiz-code/PublicBaratrumDesktopApp.git
 
+YOU WANT TO RUN EARSANDMOUTH.py file ON AN MLX CAPABLE COMPUTER, OR EDIT IT TO BE USED ON NON-MAC SILICON.
+
 This file explains how you will run the MODELS; NOT THE C# API OR THE DESKTOP APP, THEY ARE WRITTEN IN THEIR OWN REPOSITORIES.
 
 This document is **self-contained**: every file you need is inlined below.
